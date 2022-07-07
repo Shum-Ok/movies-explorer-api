@@ -16,4 +16,4 @@ router.post('/', validationCreateMovie, createMovie);
 // Удалить фильм
 router.delete('/:movieId', validationDeleteMovie, deleteMovie);
 
-module.exports.movieRouter = router;
+module.exports = router;

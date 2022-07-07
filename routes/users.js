@@ -12,4 +12,4 @@ router.get('/me', getUserMe);
 // Обновить профиль Юзера
 router.patch('/me', validationPatchUser, patchUser);
 
-module.exports.userRouter = router;
+module.exports = router;
