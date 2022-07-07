@@ -9,6 +9,7 @@ const ValidationError = require('../errors/ValidationError'); // 400
 const UnauthorizedError = require('../errors/UnauthorizedError'); // 401
 const NotFoundError = require('../errors/NotFoundError'); // 404
 const ConflictError = require('../errors/ConflictError'); // 409
+const { messagesError } = require('../utils/const'); // messages
 
 const MONGO_DUPLICATE_KEY_CODE = 11000;
 
@@ -38,10 +39,10 @@ const createUser = (req, res, next) => {
         })
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            throw new ValidationError('Переданы не правильнгые данные');
+            throw new ValidationError(messagesError.validation);
           }
           if (err.code === MONGO_DUPLICATE_KEY_CODE) {
-            next(new ConflictError(`Емайл ${err.keyValue.email} уже занят`));
+            next(new ConflictError(messagesError.conflict));
           }
           next(err);
         });
@@ -60,7 +61,7 @@ const login = (req, res, next) => {
       res.status(200).send({ token });
     })
     .catch(() => {
-      next(new UnauthorizedError('Неверные логин или пароль'));
+      next(new UnauthorizedError(messagesError.unauthorizedError));
     });
 };
 
@@ -77,19 +78,18 @@ const patchUser = (req, res, next) => {
 
   User.findByIdAndUpdate(req.user._id, { name, email }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new NotFoundError('пользователь с такои ID не найден');
+      throw new NotFoundError(messagesError.notFoundUserID);
     })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
-        throw new ValidationError('Переданы не правильнгые данные');
+        next(new ValidationError(messagesError.validation));
       }
       if (err.code === MONGO_DUPLICATE_KEY_CODE) {
-        throw new ConflictError('Такой email уже занят');
+        next(new ConflictError(messagesError.conflict));
       }
       next(err);
-    })
-    .catch(next);
+    });
 };
 
 module.exports = {

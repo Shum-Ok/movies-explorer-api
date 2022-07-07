@@ -4,6 +4,7 @@ const Movie = require('../models/movie');
 const ValidationError = require('../errors/ValidationError'); // 400
 const ForbiddenError = require('../errors/ForbiddenError'); // 403
 const NotFoundError = require('../errors/NotFoundError'); // 404
+const { messagesError } = require('../utils/const'); // messages
 
 // Создать фильм
 const createMovie = (req, res, next) => {
@@ -52,7 +53,7 @@ const createMovie = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new ValidationError('Одно из полей не заполнены корректно'));
+        return next(new ValidationError(messagesError.validation));
       }
       return next(err);
     });
@@ -63,7 +64,7 @@ const getMovies = (req, res, next) => {
   Movie.find({ owner: req.user._id })
     .then((movies) => {
       if (!movies) {
-        throw new NotFoundError('Данные не найдеты');
+        throw new NotFoundError(messagesError.notFound);
       }
       res.status(201).send(movies);
     })
@@ -77,15 +78,15 @@ const deleteMovie = (req, res, next) => {
 
   Movie.findById(movieId)
     .orFail(() => {
-      throw new NotFoundError('Фильм с таким ID не найден');
+      throw new NotFoundError(messagesError.notFoundMovieID);
     })
     .then((movie) => {
       if (movie.owner.toString() === owner) {
-        return Movie.findByIdAndRemove(movieId)
+        return movie.remove()
           .then((deletedMovie) => res.status(201).send(deletedMovie))
           .catch(next);
       }
-      throw new ForbiddenError('Действие недоступно');
+      throw new ForbiddenError(messagesError.forbidden);
     })
     .catch(next);
 };

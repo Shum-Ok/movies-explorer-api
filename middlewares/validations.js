@@ -1,14 +1,15 @@
 const { celebrate, Joi } = require('celebrate');
 const isUrl = require('validator/lib/isURL');
-
-const ValidationError = require('../errors/ValidationError');
+// errors
+const ValidationError = require('../errors/ValidationError'); // 400
+const { messagesError } = require('../utils/const'); // messages
 
 const validationUrl = (url) => {
   const validate = isUrl(url);
   if (validate) {
     return url;
   }
-  throw new ValidationError('Ошибка валидации');
+  throw new ValidationError(messagesError.validationError);
 };
 
 const validationPatchUser = celebrate({

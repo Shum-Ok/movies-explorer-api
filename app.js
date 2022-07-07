@@ -2,21 +2,24 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
+const helmet = require('helmet');
 // routes
 const routes = require('./routes');
 // middlewares
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const error = require('./middlewares/error');
 const cors = require('./middlewares/cors');
+const limiter = require('./middlewares/rate-limiter');
 // utils
 const { PORT, dbMovies } = require('./utils/config');
 
 const app = express();
-// const { PORT = 3000 } = process.env;
 
 // Логгер запросов нужно подключить до всех обработчиков роутов:
 app.use(requestLogger); // подключаем логгер запросов
 
+app.use(limiter);
+app.use(helmet());
 app.use(express.json());
 app.use(cors);
 app.get('/crash-test', () => {

@@ -4,6 +4,7 @@ const { NODE_ENV, JWT_SECRET } = require('../utils/config');
 
 // errors
 const UnauthorizedError = require('../errors/UnauthorizedError'); // 401
+const { messagesError } = require('../utils/const'); // messages
 
 module.exports = (req, _, next) => {
   // Достаем авторизованный заголовок
@@ -11,7 +12,7 @@ module.exports = (req, _, next) => {
 
   // проверяем, что он есть или начинается с Bearer
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Необходима авторизоваться');
+    throw new UnauthorizedError(messagesError.unauthorized);
   }
 
   // извлечем токен
@@ -23,7 +24,7 @@ module.exports = (req, _, next) => {
     payload = jwt.verify(token, `${NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret'}`);
   } catch (err) {
     // отправляем ошибку если не получилось
-    next(new UnauthorizedError('Необходима авторизоваться'));
+    next(new UnauthorizedError(messagesError.unauthorized));
   }
 
   req.user = payload; // записываем пейлоуд в объект запроса
